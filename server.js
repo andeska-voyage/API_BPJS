@@ -17,7 +17,7 @@ app.use(express.static('public'));
 /* ====== KREDENSIAL (jangan dibagikan / di-commit) ====== */
 const SERVICES = {
   sep: {
-    consId: '***', secretKey: '****',
+    consId: '****', secretKey: '****',
     userKey: '*****',
     baseUrl: 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest',
   },
