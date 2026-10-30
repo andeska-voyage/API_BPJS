@@ -1,3 +1,5 @@
+<img width="1458" height="1078" alt="Screenshot 2026-10-30 215500" src="https://github.com/user-attachments/assets/71d740b8-e2c7-4fcb-8747-c63a0916a951" />
+
 # 0. node --check server.js && pm2 restart bpjs-dashboard
 # 1. pastikan dashboard hidup
 curl http://127.0.0.1:3001/ping
