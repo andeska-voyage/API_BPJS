@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Antrean &amp; SEP — BPJS Kesehatan</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;
+        --accent:#38bdf8;--ok:#34d399;--err:#f87171;--warn:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);min-height:100vh;padding:22px;
+       font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1280px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+        font-weight:800;font-size:17px;color:#04121f;
+        background:linear-gradient(135deg,#38bdf8,#2563eb)}
+  h1{font-size:19px;line-height:1.2} h1 small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+  nav{margin-left:auto;display:flex;gap:10px}
+  .navlink{color:var(--accent);text-decoration:none;font-size:13px;
+           border:1px solid var(--border);padding:6px 14px;border-radius:999px;white-space:nowrap}
+  .navlink:hover{border-color:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+
+  label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;
+        letter-spacing:.6px;margin-bottom:5px}
+  input,select{width:100%;padding:9px 10px;border-radius:9px;border:1px solid var(--border);
+               background:#0b1220;color:var(--text);font-size:14px}
+  input:focus,select:focus{outline:2px solid var(--accent);border-color:transparent}
+  select:disabled{opacity:.45;cursor:not-allowed}
+  .btn{padding:10px 26px;border:0;border-radius:9px;cursor:pointer;font-weight:700;
+       font-size:14px;color:#04121f;background:linear-gradient(135deg,#38bdf8,#2563eb)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .btn.ghost{background:none;border:1px solid var(--border);color:var(--muted)}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  .filterbar{display:flex;gap:16px;row-gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+  .fitem{flex:0 1 auto}
+  .fitem.range{min-width:360px}
+  .rangelbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+
+  .rangewrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .rangewrap .sd{color:var(--muted);font-size:13px}
+  .datebox{position:relative;display:inline-flex;flex:0 0 auto}
+  .datebox input{width:auto;min-width:145px}
+  .datebox .cal{display:none;position:absolute;right:4px;top:50%;
+    transform:translateY(-50%);width:28px;height:28px;border:0;border-radius:8px;
+    background:transparent;color:var(--accent);cursor:pointer;padding:0;place-items:center}
+  .datebox .cal:hover{background:#1d2c48}
+  .datebox .cal svg{display:block}
+  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.85;cursor:pointer}
+  @supports not selector(::-webkit-calendar-picker-indicator){
+    .datebox .cal{display:grid}
+    .datebox input{padding-right:38px}
+  }
+
+  .filterbar select{width:auto;min-width:200px}
+  .taskrow{display:flex;gap:10px;align-items:flex-end}
+  @media(max-width:760px){
+    .filterbar .fitem{flex:1 1 100%}
+    .fitem.range{min-width:0}
+    .rangewrap .datebox{flex:1 1 130px}
+    .datebox input{width:100%;min-width:0}
+    .filterbar select{width:100%}
+    .filterbar .btn{width:100%}
+    .taskrow{width:100%}
+    .taskrow select{flex:1 1 auto}
+    nav{margin-left:0;flex-wrap:wrap}
+  }
+
+  .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));margin-bottom:16px}
+  .kpi{display:flex;gap:14px;align-items:center;background:var(--card);
+       border:1px solid var(--border);border-left:4px solid var(--c,#38bdf8);
+       border-radius:14px;padding:14px 16px}
+  .kico{font-size:25px}
+  .klabel{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .kval{font-size:29px;font-weight:800;color:var(--c,#38bdf8);line-height:1.1}
+  .ksub{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+  .strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .chip{padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;
+        border:1px solid var(--border);color:var(--muted)}
+  .chip.ok{color:var(--ok);border-color:var(--ok)}
+  .chip.bad{color:var(--err);border-color:var(--err)}
+  .chip.warn{color:var(--warn);border-color:var(--warn)}
+  .empty{color:var(--muted);font-size:13px}
+
+  .rekaphead{font-size:13px;color:var(--muted);margin-bottom:10px}
+  .rekaphead b{color:var(--text)}
+  .tblwrap{overflow:auto;max-height:62vh;border:1px solid var(--border);border-radius:10px}
+  .tblwrap.kecil{max-height:240px}
+  table{width:100%;min-width:1180px;border-collapse:collapse;font-size:12.5px}
+  table.mini{min-width:1400px;font-size:12px}
+  th{position:sticky;top:0;background:#0b1220;color:var(--accent);text-align:left;
+     padding:9px 10px;font-size:11px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+  td{padding:7px 10px;border-top:1px solid var(--border);white-space:nowrap;vertical-align:middle}
+  tbody tr:hover td{background:#22304a}
+  tfoot td{border-top:2px solid var(--border);font-weight:700;color:var(--text);background:#16233b}
+  .mono,.time,td.sepnum{font-family:ui-monospace,Consolas,monospace}
+  .time{color:#a5f3fc}
+  td.sepnum{color:#fbbf24}
+  .mut{color:#526180}
+  .warn{color:var(--warn)}
+  .umum{color:#64748b;font-style:italic}
+  tr.seponly td{color:#64748b}
+  tr.seponly td:not(.time){font-style:italic}
+  tr.dikecualikan td{color:#7f1d1d;background:rgba(248,113,113,.05)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;
+        border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+  .pill.ok{color:var(--ok);border-color:var(--ok)}
+  .pill.bad{color:var(--err);border-color:var(--err)}
+  .pill.wait{color:var(--warn);border-color:var(--warn)}
+  .pill.prog{color:var(--accent);border-color:var(--accent)}
+  .emptybox{padding:34px;text-align:center;color:var(--muted)}
+
+  .legend{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9;
+          border-top:1px dashed var(--border);padding-top:10px}
+  .legend b{color:var(--text)}
+  details.raw{margin-top:12px;border-top:1px dashed var(--border);padding-top:10px}
+  details.raw summary{cursor:pointer;font-size:12px;color:var(--muted)}
+  details.raw pre{margin-top:10px;background:#0b1220;border:1px solid var(--border);
+                  border-radius:10px;padding:14px;font-size:12px;overflow:auto;
+                  max-height:340px;color:#a5f3fc;font-family:ui-monospace,Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">BJ</div>
+    <h1>Dashboard Antrean &amp; SEP
+      <small>Bridge BPJS Kesehatan · VClaim (SEP) + Antrean RS (Mobile JKN)</small>
+    </h1>
+    <nav>
+      <a class="navlink" href="/checker.html">🧪 Cek API Terpisah</a>
+    </nav>
+  </header>
+
+  <!-- FILTER -->
+  <section class="card filterbar">
+    <div class="fitem range">
+      <div class="rangelbl">Range Tanggal Kunjungan</div>
+      <div class="rangewrap">
+        <span class="datebox">
+          <input type="date" id="dari">
+          <button type="button" class="cal" data-for="dari"
+                  title="Buka kalender" aria-label="Buka kalender">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
+        </span>
+        <span class="sd">s/d</span>
+        <span class="datebox">
+          <input type="date" id="sampai">
+          <button type="button" class="cal" data-for="sampai"
+                  title="Buka kalender" aria-label="Buka kalender">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
+    <div class="fitem">
+      <label>Jenis Pelayanan (SEP)</label>
+      <select id="jns">
+        <option value="2">Rawat Jalan</option>
+        <option value="1">Rawat Inap</option>
+      </select>
+    </div>
+    <div class="fitem">
+      <label>Waktu (Task)</label>
+      <select id="waktu">
+        <option value="rs">Semua (rs)</option>
+        <option value="rj">Rawat Jalan (rj)</option>
+        <option value="ri">Rawat Inap (ri)</option>
+      </select>
+    </div>
+    <div class="fitem">
+      <label>Data Task (T1–T7)</label>
+      <div class="taskrow">
+        <select id="taskscope">
+          <option value="last">Hari terakhir saja (cepat)</option>
+          <option value="all">Semua hari (lambat)</option>
+          <option value="off">Nonaktif</option>
+        </select>
+        <button type="button" class="btn ghost" id="btn-task"
+                style="padding:9px 16px;font-weight:700;white-space:nowrap"
+                title="ON: dashboard memanggil API taskid (kolom T terisi, lebih lambat). OFF: API taskid dilewati total — juga memengaruhi laporan Telegram.">⏱️ Task_ID: OFF</button>
+      </div>
+    </div>
+    <div class="fitem">
+      <label>&nbsp;</label>
+      <button class="btn" id="go">Tampilkan</button>
+    </div>
+    <div id="autorefresh"
+         style="flex:1 1 100%;margin-top:6px;font-size:12px;color:var(--muted)"></div>
+  </section>
+
+  <!-- 5 KPI CARDS -->
+  <section class="cards">
+    <div class="kpi" style="--c:#38bdf8">
+      <div class="kico">📄</div>
+      <div>
+        <div class="klabel">Total Terbit SEP</div>
+        <div class="kval" id="v-sep">–</div>
+        <div class="ksub" id="s-sep">hanya poli terisi, tanpa IGD</div>
+      </div>
+    </div>
+    <div class="kpi" style="--c:#a78bfa">
+      <div class="kico">🎫</div>
+      <div>
+        <div class="klabel">Total Antrean</div>
+        <div class="kval" id="v-antrean">–</div>
+        <div class="ksub" id="s-antrean">BPJS (ber-referensi) + UMUM</div>
+      </div>
+    </div>
+    <div class="kpi" style="--c:#fbbf24">
+      <div class="kico">📱</div>
+      <div>
+        <div class="klabel">Capaian MJKN</div>
+        <div class="kval" id="v-mjkn">–</div>
+        <div class="ksub" id="s-mjkn">selesai dilayani + ber-ref ÷ total SEP</div>
+      </div>
+    </div>
+    <div class="kpi" style="--c:#f472b6">
+      <div class="kico">🔗</div>
+      <div>
+        <div class="klabel">Capaian Bridging JKN</div>
+        <div class="kval" id="v-bridg">–</div>
+        <div class="ksub" id="s-bridg">selesai dilayani + ber-ref ÷ total SEP</div>
+      </div>
+    </div>
+    <div class="kpi" style="--c:#34d399">
+      <div class="kico">🌐</div>
+      <div>
+        <div class="klabel">Capaian All Sumber</div>
+        <div class="kval" id="v-all">–</div>
+        <div class="ksub" id="s-all">%MJKN + %Bridging JKN</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REKAP PER TANGGAL -->
+  <section class="card" id="rekapcard" style="display:none;margin-bottom:16px">
+    <div class="rekaphead" id="rekaphead">Rekap per Tanggal</div>
+    <div class="tblwrap kecil" id="rekapwrap"></div>
+  </section>
+
+  <!-- TABEL UTAMA -->
+  <section class="card">
+    <div class="strip" id="strip"><span class="empty">Memuat…</span></div>
+    <div class="tblwrap" id="tblwrap"></div>
+
+    <div class="legend">
+      <b>Rumus (v8):</b>
+      <br><b>Total SEP Terbit</b> = hanya SEP dengan <i>poli</i> terisi <b>dan bukan IGD</b>.
+      <br><b>Pasien BPJS</b> = antrean dengan <i>nomorreferensi</i> terisi. <b>UMUM</b> = tanpa.
+      <br><b>Capaian MJKN / Bridging JKN</b> = antrean <i>Mobile JKN / Bridging</i> yang
+      ① ber-<i>nomorreferensi</i> <b>dan</b> ② berstatus <b>“Selesai dilayani”</b>
+      ÷ <b>total SEP terbit (valid)</b> × 100. <b>Tidak dihitung</b>: batal/gagal,
+      belum selesai, dan tanpa referensi.
+      <br>---
+      <br><b>Data task (T1–T7) — v10:</b> <code>getlisttask</code> adalah
+      <b>POST</b> dengan body <code>{kodebooking, taskid, waktu}</code> —
+      <b>satu panggilan per kodebooking mengembalikan semua task 1–7</b> (taskid diabaikan).
+      Kolom T menampilkan <b>wakturs</b> (waktu sisi RS); arahkan kursor untuk
+      <b>taskname</b> + <b>waktu</b> (sisi BPJS).
+      <br><b>⏱️ Tombol Task ON/OFF:</b> <b>OFF</b> = API taskid <i>dilewati total</i>
+      (kolom T kosong, loading jauh lebih cepat) — statusnya juga dikirim ke server
+      sehingga <b>laporan Telegram ikut memakai pengaturan ini</b>. Pilihan
+      <i>Hari terakhir / Semua hari / Nonaktif</i> mengatur cakupan booking yang diambil
+      saat <b>ON</b>.
+      <br><b>Arti task:</b> <b>T1</b> mulai tunggu admisi (check-in) · <b>T2</b> akhir tunggu
+      admisi · <b>T3</b> akhir layan admisi / mulai tunggu poli · <b>T4</b> mulai layan poli ·
+      <b>T5</b> akhir layan poli · <b>T6</b> mulai layan farmasi · <b>T7</b> akhir layan farmasi.
+      <br><b>JK:</b> 1 = R.Jalan · 2 = R.Inap · 3 = Promotif.
+      <br>Baris <b>redup</b> = SEP terbit tanpa antrean online (info). Baris <b>merah</b> =
+      IGD/tanpa poli (dikecualikan).
+      <br><b>Range maks. 31 hari.</b> 🔄 <b>Auto-refresh tiap 1 jam.</b>
+    </div>
+
+    <details class="raw"><summary>Raw JSON (debug)</summary><pre id="raw"></pre></details>
+  </section>
+</div>
+
+<script>
+/* ================= CONST & UTIL ================= */
+const $ = id => document.getElementById(id);
+const MAX_HARI = 31;
+const REFRESH_MS = 60*60*1000;          // auto refresh: 1 jam
+
+const TASK_LABELS = {
+  1:'Mulai waktu tunggu admisi (check-in)',
+  2:'Akhir waktu tunggu admisi / mulai layan admisi',
+  3:'Akhir layan admisi / mulai tunggu poli',
+  4:'Mulai waktu layan poli',
+  5:'Akhir waktu layan poli',
+  6:'Mulai waktu layan farmasi',
+  7:'Akhir waktu layan farmasi'
+};
+
+/* ================= STATE ================= */
+let taskOn = true;   // toggle API taskid (dipakai muat() + dikirim ke /monitor/options)
+
+/* ================= KRITERIA (v8) ================= */
+function statusKey(p){
+  const s = String(p.status||'').toLowerCase();
+  if (/batal|gagal|cancel/.test(s)) return 'gagal';
+  if (/selesai/.test(s))             return 'selesai';
+  return 'berjalan';
+}
+function gagal(p){ return statusKey(p)==='gagal'; }
+function selesaiDilayani(p){ return statusKey(p)==='selesai'; }
+
+function sumber(p){
+  const src = String(p.sumberdata||'').toLowerCase();
+  if (/mobile\s*jkn/.test(src)) return 'mjkn';
+  if (/bridging/.test(src))     return 'bridging';
+  return 'lainnya';
+}
+function punyaRef(p){
+  const r = String(p.nomorreferensi||'').trim();
+  return !!r && r!=='-' && r.toLowerCase()!=='null' && r.toLowerCase()!=='undefined';
+}
+
+function sepExcludeReason(s){
+  const poli = String(s.poli||'').trim().toLowerCase();
+  if (!poli || poli==='-' || poli==='—') return 'tanpa poli';
+  if (poli==='igd') return 'IGD';
+  return null;
+}
+function sepPoliValid(s){ return sepExcludeReason(s)===null; }
+
+function hitungCapaian(pArr, totalSep){
+  const pct = n => totalSep>0 ? Math.round(n*100/totalSep) : 0;
+  let nBpjs=0, nUmum=0, nGagal=0;
+  let mjknGagal=0, mjknUmum=0, mjknBelum=0,
+      bridgGagal=0, bridgUmum=0, bridgBelum=0;
+  const setM=new Set(), setB=new Set();
+  for (const p of pArr){
+    const ref = punyaRef(p);
+    const g   = gagal(p);
+    if (ref) nBpjs++; else nUmum++;
+    if (g) nGagal++;
+    const src = sumber(p);
+    if (src==='mjkn'){
+      if (g)                        mjknGagal++;
+      else if (!ref)                mjknUmum++;
+      else if (!selesaiDilayani(p)) mjknBelum++;
+      else                          setM.add(String(p.nomorreferensi).trim());
+    } else if (src==='bridging'){
+      if (g)                        bridgGagal++;
+      else if (!ref)                bridgUmum++;
+      else if (!selesaiDilayani(p)) bridgBelum++;
+      else                          setB.add(String(p.nomorreferensi).trim());
+    }
+  }
+  const pctMjkn  = pct(setM.size);
+  const pctBridg = pct(setB.size);
+  return {
+    totalSep, antrean:pArr.length, nBpjs, nUmum, nGagal,
+    mjknCocok:setM.size, bridgCocok:setB.size,
+    mjknGagal, mjknUmum, mjknBelum,
+    bridgGagal, bridgUmum, bridgBelum,
+    pctMjkn, pctBridg, pctAll: pctMjkn + pctBridg
+  };
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function fmtTime(ms){
+  const d=new Date(Number(ms));
+  if (isNaN(d.getTime())) return '—';
+  const p=x=>String(x).padStart(2,'0');
+  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+function fmtFull(ms){ const d=new Date(Number(ms));
+  return isNaN(d.getTime()) ? '—' : d.toLocaleString('id-ID'); }
+
+/* BPJS mengirim "05-10-2026 07:34:53 WIB" (DD-MM-YYYY) — parse eksplisit */
+function parseTaskTime(v){
+  if (v==null || v==='') return null;
+  const n = Number(v);
+  if (!isNaN(n) && n>1e11) return n;                     // epoch milidetik
+  const s = String(v).replace(/\s*(WIB|WITA|WIT)/i,'').trim();
+  let m = s.match(/^(\d{2})-(\d{2})-(\d{4})[ T](\d{2}):(\d{2}):(\d{2})/);   // DD-MM-YYYY
+  if (m) return new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5], +m[6]).getTime();
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);       // YYYY-MM-DD
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]).getTime();
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
+
+function ambilArray(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && typeof resp === 'object'){
+    for (const k of ['sep','antrean','task','list'])
+      if (Array.isArray(resp[k])) return resp[k];
+    for (const k of Object.keys(resp)){
+      const a = ambilArray(resp[k]);
+      if (a && a.length) return a;
+    }
+  }
+  return [];
+}
+
+function daftarTanggal(a,b){
+  const out=[];
+  const d=new Date(a+'T00:00:00'), e=new Date(b+'T00:00:00');
+  if(isNaN(d)||isNaN(e)) return out;
+  const p=x=>String(x).padStart(2,'0');
+  for(let t=new Date(d); t<=e; t.setDate(t.getDate()+1))
+    out.push(t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate()));
+  return out;
+}
+
+function geserHari(hari){
+  const d=new Date(); d.setDate(d.getDate()+hari);
+  const p=x=>String(x).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+
+/* ================= TASK (v10) =================
+   Kontrak terverifikasi: POST /antrean/getlisttask
+   body {kodebooking, taskid, waktu} → SEMUA task 1–7 booking itu.
+   Dipanggil satu kali per kodebooking, berjeda 200 ms.        */
+async function ambilTasks(kbList, wkt, onProg){
+  const out=[];
+  for (let i=0;i<kbList.length;i++){
+    if (onProg) onProg(i+1, kbList.length);
+    try{
+      const r = await fetch('/api/antrean/antrean/getlisttask', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ kodebooking: kbList[i], taskid: 1, waktu: wkt })
+      });
+      const d = await r.json();
+      const arr = ambilArray(d && d.response);
+      if (Array.isArray(arr)) out.push(...arr);
+    }catch(e){ /* booking ini gagal — lanjut ke berikutnya */ }
+    if (i<kbList.length-1) await new Promise(r=>setTimeout(r,200));
+  }
+  return out;
+}
+
+/* ================= AMBIL 2 ENDPOINT PER TANGGAL ================= */
+async function ambilPerTanggal(tgl, jns){
+  const err=[];
+  const [sepR, pendR] = await Promise.allSettled([
+    fetch(`/api/sep/Monitoring/Kunjungan/Tanggal/${tgl}/JnsPelayanan/${jns}`).then(r=>r.json()),
+    fetch(`/api/antrean/antrean/pendaftaran/tanggal/${tgl}`).then(r=>r.json())
+  ]);
+  const sep  = sepR.status==='fulfilled'  ? sepR.value  : null;
+  const pend = pendR.status==='fulfilled' ? pendR.value : null;
+
+  if (sepR.status==='rejected') err.push('SEP: '+sepR.reason.message);
+  else if (sep && sep._info && sep._info.httpStatus!==200) err.push('SEP HTTP '+sep._info.httpStatus);
+  if (pendR.status==='rejected') err.push('Antrean: '+pendR.reason.message);
+  else if (pend && pend._info && pend._info.httpStatus!==200) err.push('Antrean HTTP '+pend._info.httpStatus);
+
+  return { sep, pend, err };
+}
+
+/* ================= MAIN LOAD ================= */
+async function muat(){
+  const a=$('dari').value, b=$('sampai').value;
+  const chipErr = t => { $('strip').innerHTML = '<span class="chip bad">'+t+'</span>'; };
+
+  if (!a || !b) return chipErr('Pilih tanggal mulai &amp; sampai');
+  if (a > b)    return chipErr('Tanggal mulai melebihi tanggal sampai');
+  const daftar = daftarTanggal(a,b);
+  if (!daftar.length)      return chipErr('Range tidak valid');
+  if (daftar.length>MAX_HARI) return chipErr('Maksimal '+MAX_HARI+' hari per request');
+
+  const jns=$('jns').value, wkt=$('waktu').value;
+
+  /* cakupan task mengikuti toggle */
+  let scope = taskOn ? $('taskscope').value : 'off';
+  if (!taskOn) $('taskscope').value = 'off';
+  const scopeLbl = {last:'hari terakhir', all:'semua hari', off:'nonaktif'}[scope]||scope;
+
+  const btn=$('go'); btn.disabled=true;
+  const t0=performance.now();
+
+  try{
+    const sepArr=[], pendArr=[];
+    const perDayIdx=new Map();
+
+    /* ---- 1. muat semua tanggal: SEP + antrean ---- */
+    for (let i=0;i<daftar.length;i++){
+      const tgl=daftar[i];
+      btn.textContent='Memuat '+(i+1)+'/'+daftar.length+'…';
+
+      const res  = await ambilPerTanggal(tgl, jns);
+      const sArr = res.sep  ? ambilArray(res.sep.response)  : [];
+      const pArr = res.pend ? ambilArray(res.pend.response) : [];
+      sepArr.push(...sArr); pendArr.push(...pArr);
+
+      const sValid   = sArr.filter(sepPoliValid);
+      const igdCount = sArr.filter(s=>sepExcludeReason(s)==='IGD').length;
+      const noPoli   = sArr.length - sValid.length - igdCount;
+
+      perDayIdx.set(tgl, { tgl, pArr, sepCount:sValid.length,
+                           igdCount, noPoliCount:noPoli, err:res.err||[] });
+
+      if (i<daftar.length-1) await new Promise(r=>setTimeout(r,250));
+    }
+
+    /* ---- 2. TASK: per kodebooking sesuai cakupan + toggle ---- */
+    let kbTarget=[];
+    if (scope==='last'){
+      const lastDate = daftar[daftar.length-1];
+      const s=new Set();
+      for (const p of pendArr)
+        if (String(p.tanggal||'')===lastDate && p.kodebooking)
+          s.add(String(p.kodebooking).trim());
+      kbTarget=[...s];
+    } else if (scope==='all'){
+      kbTarget=[...new Set(pendArr.map(p=>String(p.kodebooking||'').trim()).filter(Boolean))];
+    }
+
+    let taskArr=[];
+    if (kbTarget.length){
+      taskArr = await ambilTasks(kbTarget, wkt, (i,n)=>{
+        btn.textContent='Memuat task '+i+'/'+n+'…';
+      });
+    }
+
+    /* index task: simpan OBJEK UTUH (wakturs/waktu/taskname) */
+    const taskByKb=new Map();
+    for (const t of taskArr){
+      const kb=String(t.kodebooking||'').trim(); if(!kb) continue;
+      if(!taskByKb.has(kb)) taskByKb.set(kb,{});
+      taskByKb.get(kb)[Number(t.taskid)]=t;
+    }
+    for (const rec of perDayIdx.values()){
+      rec.taskCount = rec.pArr.reduce((ax,p)=>{
+        const m=taskByKb.get(String(p.kodebooking||'').trim());
+        return ax + (m ? Object.keys(m).length : 0);
+      },0);
+    }
+
+    /* ---- 3. ref set (info match saja) ---- */
+    const refSet = new Set(pendArr.filter(punyaRef)
+      .map(p=>String(p.nomorreferensi).trim()));
+
+    /* ---- 4. capaian per hari ---- */
+    for (const rec of perDayIdx.values())
+      Object.assign(rec, hitungCapaian(rec.pArr, rec.sepCount));
+
+    /* ---- 5. susun baris ---- */
+    const rows=[];
+    for (const p of pendArr)
+      rows.push({ t:'a', p, task: taskByKb.get(String(p.kodebooking||'').trim())||{} });
+
+    const sepValidTotal = sepArr.filter(sepPoliValid).length;
+    let nSepMatch=0;
+    const sepRows=[];
+    for (const s of sepArr){
+      const reason = sepExcludeReason(s);
+      const valid  = reason===null;
+      const match  = valid && refSet.has(String(s.noSep||''));
+      if (match) nSepMatch++;
+      sepRows.push({ t:'s', s, match, valid, reason });
+    }
+    const sepTanpaAntrean = sepValidTotal - nSepMatch;
+    rows.push(...sepRows);
+
+    const rowDate = r => r.t==='a' ? String(r.p.tanggal||'') : String(r.s.tglSep||'');
+    rows.sort((x,y)=>{
+      const dx=rowDate(x), dy=rowDate(y);
+      if (dx!==dy) return dx<dy?-1:1;
+      if (x.t!==y.t) return x.t==='a'?-1:1;
+      if (x.t==='a'){
+        const ka=Number(x.p.createdtime)||0, kb=Number(y.p.createdtime)||0;
+        return ka-kb || String(x.p.noantrean||'').localeCompare(String(y.p.noantrean||''));
+      }
+      return String(x.s.noSep).localeCompare(String(y.s.noSep));
+    });
+
+    /* ---- 6. KPI agregat ---- */
+    const totalSep = sepValidTotal;
+    const nIgd     = [...perDayIdx.values()].reduce((ax,r)=>ax+r.igdCount,0);
+    const nNoPoli  = [...perDayIdx.values()].reduce((ax,r)=>ax+r.noPoliCount,0);
+    const capT = hitungCapaian(pendArr, totalSep);
+    const nHari = daftar.length;
+
+    $('v-sep').textContent      = totalSep;
+    $('s-sep').textContent      = 'poli terisi, tanpa IGD · IGD '+nIgd+', tanpa poli '+nNoPoli
+                                  +' (dikecualikan) · tanpa antrean '+sepTanpaAntrean;
+    $('v-antrean').textContent  = capT.antrean;
+    $('s-antrean').textContent  = 'BPJS '+capT.nBpjs+' (ber-ref) · UMUM '+capT.nUmum;
+    $('v-mjkn').textContent     = capT.pctMjkn+'%';
+    $('s-mjkn').textContent     = capT.mjknCocok+' selesai+ref ÷ '+totalSep+' SEP valid'
+                                  +' · belum '+capT.mjknBelum
+                                  +', gagal '+capT.mjknGagal
+                                  +', umum '+capT.mjknUmum+' (tidak dihitung)';
+    $('v-bridg').textContent    = capT.pctBridg+'%';
+    $('s-bridg').textContent    = capT.bridgCocok+' selesai+ref ÷ '+totalSep+' SEP valid'
+                                  +' · belum '+capT.bridgBelum
+                                  +', gagal '+capT.bridgGagal
+                                  +', umum '+capT.bridgUmum+' (tidak dihitung)';
+    $('v-all').textContent      = capT.pctAll+'%';
+    $('s-all').textContent      = 'MJKN '+capT.pctMjkn+'% + Bridging '+capT.pctBridg+'%';
+
+    /* ---- strip ---- */
+    const chip=(t,c)=>'<span class="chip '+(c||'')+'">'+t+'</span>';
+    const nErr = [...perDayIdx.values()].reduce((ax,r)=>ax+r.err.length,0);
+    let sHtml='';
+    sHtml += chip(nHari+' hari · '+a+' s/d '+b);
+    sHtml += chip('SEP '+totalSep+' (valid) · Antrean '+capT.antrean
+                  +' (BPJS '+capT.nBpjs+' / UMUM '+capT.nUmum+')','ok');
+    if (scope==='off'){
+      sHtml += chip('⏱️ Task OFF — API taskid dilewati (loading cepat)');
+    } else {
+      sHtml += chip('Task '+taskArr.length+' · '+scopeLbl
+                    +(kbTarget.length?' ('+kbTarget.length+' booking)':''),
+                    taskArr.length?'ok':'warn');
+      if (scope==='all' && kbTarget.length>100)
+        sHtml += chip('task semua hari: '+kbTarget.length+' booking — bisa lambat','warn');
+    }
+    if (nIgd+nNoPoli>0)
+      sHtml += chip('IGD '+nIgd+' + tanpa poli '+nNoPoli+' — dikecualikan','warn');
+    sHtml += chip('MJKN '+capT.pctMjkn+'% · Bridg '+capT.pctBridg+'% → All '+capT.pctAll+'%',
+                  capT.pctAll<=100?'ok':'warn');
+    const belumCukup = capT.mjknBelum + capT.bridgBelum;
+    if (capT.nGagal)
+      sHtml += chip('batal/gagal: '+capT.nGagal+' (tidak dihitung)','warn');
+    if (belumCukup)
+      sHtml += chip('belum selesai: '+belumCukup+' (tidak dihitung)','warn');
+    sHtml += chip('ref↔SEP cocok: '+nSepMatch);
+    if (nErr) sHtml += chip('kendala: '+nErr,'warn');
+    sHtml += chip(Math.round(performance.now()-t0)+' ms');
+    sHtml += chip('diperbarui '+new Date().toLocaleTimeString('id-ID'));
+    $('strip').innerHTML = sHtml;
+
+    renderRekap(perDayIdx, daftar, capT, scopeLbl);
+    renderTabel(rows);
+
+    $('raw').textContent = JSON.stringify(
+      { rentang:[a,b], taskOn:taskOn, taskScope:scope,
+        bookingTask:kbTarget.length, totalTask:taskArr.length,
+        capaian_total: capT,
+        rekap:[...perDayIdx.values()].map(({pArr,...rest})=>rest) }, null, 2);
+
+  }catch(e){
+    $('strip').innerHTML = '<span class="chip bad">ERROR: '+esc(e.message)+'</span>';
+  }finally{
+    btn.disabled=false; btn.textContent='Tampilkan';
+  }
+}
+
+/* ================= REKAP PER TANGGAL ================= */
+function renderRekap(perDayIdx, daftar, capT, scopeLbl){
+  const recs = daftar.map(t=>perDayIdx.get(t)).filter(Boolean);
+  if (!recs.length){ $('rekapcard').style.display='none'; return; }
+  $('rekapcard').style.display='block';
+
+  const tot = k => recs.reduce((a,r)=>a+(r[k]||0),0);
+  const ket = r => r.err.length
+    ? '<span class="warn" title="'+esc(r.err.join(' | '))+'">'+esc(r.err[0])+(r.err.length>1?' +'+(r.err.length-1):'')+'</span>'
+    : '<span class="mut">—</span>';
+
+  const tSep=tot('totalSep'), tIgd=tot('igdCount'), tNoPoli=tot('noPoliCount'),
+        tAntrean=tot('antrean'), tBpjs=tot('nBpjs'), tUmum=tot('nUmum'), tGagal=tot('nGagal'),
+        tM=tot('mjknCocok'), tB=tot('bridgCocok'),
+        tBelumM=tot('mjknBelum'), tBelumB=tot('bridgBelum'),
+        tTask=tot('taskCount');
+
+  const head='<tr><th>Tanggal</th>'
+    +'<th title="SEP valid: poli terisi, bukan IGD">SEP ✓</th>'
+    +'<th title="SEP poli IGD — dikecualikan">IGD</th>'
+    +'<th title="SEP tanpa poli — dikecualikan">Tanpa Poli</th>'
+    +'<th>Antrean</th>'
+    +'<th title="punya nomor referensi">BPJS</th>'
+    +'<th title="tanpa nomor referensi">UMUM</th>'
+    +'<th title="batal/gagal — tidak dihitung">Gagal</th>'
+    +'<th title="Mobile JKN: ber-ref + selesai dilayani">MJKN ✓</th>'
+    +'<th title="Bridging: ber-ref + selesai dilayani">Bridg ✓</th>'
+    +'<th title="ber-ref tapi belum selesai dilayani">Belum</th>'
+    +'<th>MJKN %</th><th>Bridg %</th><th>All %</th>'
+    +'<th title="jumlah task (sesuai cakupan task aktif)">Task</th><th>Ket.</th></tr>';
+
+  const body=recs.map(r=>'<tr>'
+    +'<td class="mono">'+esc(r.tgl)+'</td>'
+    +'<td class="mono">'+r.totalSep+'</td>'
+    +'<td class="mono">'+(r.igdCount||0)+'</td>'
+    +'<td class="mono">'+(r.noPoliCount||0)+'</td>'
+    +'<td class="mono">'+r.antrean+'</td>'
+    +'<td class="mono">'+r.nBpjs+'</td>'
+    +'<td class="mono">'+r.nUmum+'</td>'
+    +'<td class="mono">'+r.nGagal+'</td>'
+    +'<td class="mono">'+r.mjknCocok+'</td>'
+    +'<td class="mono">'+r.bridgCocok+'</td>'
+    +'<td class="mono">'+((r.mjknBelum||0)+(r.bridgBelum||0))+'</td>'
+    +'<td class="mono">'+r.pctMjkn+'%</td>'
+    +'<td class="mono">'+r.pctBridg+'%</td>'
+    +'<td class="mono"><b>'+r.pctAll+'%</b></td>'
+    +'<td class="mono">'+(r.taskCount||0)+'</td>'
+    +'<td>'+ket(r)+'</td></tr>').join('');
+
+  const foot='<tr><td>TOTAL</td><td>'+tSep+'</td><td>'+tIgd+'</td><td>'+tNoPoli+'</td>'
+    +'<td>'+tAntrean+'</td><td>'+tBpjs+'</td><td>'+tUmum+'</td><td>'+tGagal+'</td>'
+    +'<td>'+tM+'</td><td>'+tB+'</td><td>'+(tBelumM+tBelumB)+'</td>'
+    +'<td>'+capT.pctMjkn+'%</td><td>'+capT.pctBridg+'%</td>'
+    +'<td><b>'+capT.pctAll+'%</b></td><td>'+tTask+'</td><td></td></tr>';
+
+  $('rekapwrap').innerHTML =
+    '<table class="mini"><thead>'+head+'</thead><tbody>'+body+'</tbody><tfoot>'+foot+'</tfoot></table>';
+  $('rekaphead').innerHTML = 'Rekap per Tanggal — <b>'+recs.length+' hari</b>'
+    +' · SEP valid <b>'+tSep+'</b> (IGD '+tIgd+' · tanpa poli '+tNoPoli+' dikecualikan)'
+    +' · antrean <b>'+tAntrean+'</b> (BPJS '+tBpjs+' / UMUM '+tUmum+')'
+    +' · All <b>'+capT.pctAll+'%</b> · Task_ID: '+esc(scopeLbl);
+}
+
+/* ================= KOLOM TABEL ================= */
+function kolomTask(i){
+  return { h:'T'+i, title:TASK_LABELS[i], cls:'time', r:row=>{
+    if (row.t!=='a') return '<span class="mut">—</span>';
+    const t = row.task && row.task[i];
+    if (!t || (!t.wakturs && !t.waktu))
+      return '<span class="mut" title="tidak ada data task utk booking ini">—</span>';
+    const nama = esc(t.taskname || TASK_LABELS[i] || ('Task '+i));
+    const rs   = esc(t.wakturs || '—');
+    const bp   = esc(t.waktu   || '—');
+    const ms   = parseTaskTime(t.wakturs || t.waktu);
+    return '<span title="'+nama+' — RS: '+rs+' · BPJS: '+bp+'">'
+           +(ms ? fmtTime(ms) : '—')+'</span>';
+  }};
+}
+
+const KOLOM = [
+  { h:'No', cls:'mono', r:(row,i)=>i+1 },
+  { h:'No. Kartu', cls:'mono', r:row=> esc(row.t==='a'?row.p.nokapst:row.s.noKartu)||'—' },
+  { h:'Nomor Referensi', cls:'sepnum',
+    title:'Nomor referensi (surat kontrol/SEP BPJS). Terisi = pasien BPJS; “—” = pasien UMUM',
+    r:row=>{
+      if (row.t==='a')
+        return punyaRef(row.p)
+          ? esc(row.p.nomorreferensi)
+          : '<span class="umum" title="Tanpa referensi → pasien UMUM">—</span>';
+      return '<span title="SEP terbit '+esc(row.s.tglSep)+' — nomor '+esc(row.s.noSep)+'">'
+             +esc(row.s.noSep)+'</span>';
+  }},
+  { h:'Kategori', title:'BPJS = punya nomor referensi · UMUM = tanpa',
+    r:row=>{
+      if (row.t==='s'){
+        if (!row.valid)
+          return '<span class="pill bad" title="Dikecualikan dari total SEP terbit">'
+                 +esc(row.reason)+' — dikecualikan</span>';
+        return '<span class="pill prog" title="SEP terbit '+esc(row.s.tglSep)
+               +(row.match?' · punya antrean online':' · TANPA antrean online')+'">'
+               +(row.match?'BPJS · online':'BPJS · offline')+'</span>';
+      }
+      return punyaRef(row.p)
+        ? '<span class="pill ok" title="Pasien BPJS (punya nomor referensi)">BPJS</span>'
+        : '<span class="pill wait" title="Pasien UMUM (tanpa nomor referensi)">UMUM</span>';
+  }},
+  { h:'Poli', r:row=>{
+      if (row.t!=='a'){
+        const p = esc(row.s.poli)||'—';
+        return row.valid ? p
+          : p+' <span class="pill bad" title="Dikecualikan">'+esc(row.reason)+'</span>';
+      }
+      return esc(row.p.kodepoli)||'—';
+  }},
+  { h:'JK', title:'Jenis kunjungan: 1=R.Jalan · 2=R.Inap · 3=Promotif', r:row=>{
+      const v = row.t==='a' ? row.p.jeniskunjungan
+                             : (String(row.s.jnsPelayanan||'').toLowerCase().includes('inap')?2:1);
+      const L = {1:'R.Jalan',2:'R.Inap',3:'Promotif'}[v];
+      return '<span title="'+esc(L||'')+'">'+esc(v??'—')+'</span>';
+  }},
+  { h:'No. RM',   cls:'mono', r:row=> esc(row.t==='a'?row.p.norekammedis:'')||'—' },
+  { h:'NIK',      cls:'mono', r:row=> esc(row.t==='a'?row.p.nik:'')||'—' },
+  { h:'No. Antrean', r:row=> esc(row.t==='a'?row.p.noantrean:'')||'—' },
+  { h:'Sumber Data',
+    title:'✓ = dihitung dalam capaian (ber-ref + selesai dilayani)',
+    r:row=>{
+      if (row.t!=='a') return '<span class="mut">SEP (VClaim)</span>';
+      const src = sumber(row.p);
+      if (src==='mjkn' || src==='bridging'){
+        const ok = punyaRef(row.p) && !gagal(row.p) && selesaiDilayani(row.p);
+        return esc(row.p.sumberdata)
+          +' <span class="pill '+(ok?'ok':'bad')+'">'+(ok?'✓':'✗')+'</span>';
+      }
+      return esc(row.p.sumberdata)||'—';
+  }},
+  { h:'Tanggal', cls:'mono', r:row=> esc(row.t==='a'?row.p.tanggal:row.s.tglSep)||'—' },
+  { h:'Status', r:row=>{
+      if (row.t==='s') return '<span class="mut">SEP terbit</span>';
+      const s=String(row.p.status||'—');
+      const cl = /selesai/i.test(s)?'ok'
+               : /batal|gagal|cancel/i.test(s)?'bad'
+               : /belum|menunggu|tunggu/i.test(s)?'wait':'prog';
+      return '<span class="pill '+cl+'">'+esc(s)+'</span>';
+  }},
+  kolomTask(1), kolomTask(2), kolomTask(3), kolomTask(4),
+  kolomTask(5), kolomTask(6), kolomTask(7)
+];
+
+function renderTabel(rows){
+  if (!rows.length){
+    $('tblwrap').innerHTML='<div class="emptybox">Tidak ada data pada rentang ini.</div>';
+    return;
+  }
+  const cls = r => r.t==='s' ? (r.valid?'seponly':'dikecualikan') : '';
+  const thead='<tr>'+KOLOM.map(c=>'<th'+(c.title?' title="'+esc(c.title)+'"':'')+'>'+c.h+'</th>').join('')+'</tr>';
+  const tbody=rows.map((row,i)=>'<tr class="'+cls(row)+'">'+
+    KOLOM.map(c=>'<td class="'+(c.cls||'')+'">'+c.r(row,i)+'</td>').join('')+'</tr>').join('');
+  $('tblwrap').innerHTML='<table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table>';
+}
+
+/* ================= AUTO REFRESH ================= */
+function infoAutoRefresh(){
+  const berikut=new Date(Date.now()+REFRESH_MS);
+  const el=$('autorefresh'); if(!el) return;
+  el.innerHTML='🔄 Auto-refresh: <b>tiap 1 jam</b> — berikutnya '
+    +berikut.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})
+    +' (filter dipertahankan)';
+}
+
+/* ================= TOGGLE API TASKID ================= */
+async function setTaskOn(v){
+  taskOn = v;
+  const b = $('btn-task'), sel = $('taskscope');
+  b.textContent = '⏱️ Task_ID: '+(v?'ON':'OFF');
+  b.style.borderColor = v ? 'var(--ok)' : 'var(--border)';
+  b.style.color       = v ? 'var(--ok)' : 'var(--muted)';
+  sel.disabled = !v;
+  if (!v){ sel.value='off'; }
+  else if (sel.value==='off'){ sel.value='last'; }
+  /* kirim ke server agar laporan Telegram ikut pengaturan ini */
+  try{
+    await fetch('/monitor/options',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ taskEnabled: v })
+    });
+  }catch(e){ /* endpoint monitor belum ada — toggle tetap berlaku lokal */ }
+}
+
+/* ================= INIT ================= */
+ $('dari').value    = geserHari(0);    // default: hari ini
+ $('sampai').value  = geserHari(0);
+
+document.querySelectorAll('.cal').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const i = document.getElementById(b.dataset.for);
+    if (!i) return;
+    try { i.showPicker(); } catch(e){ i.focus(); }
+  });
+});
+
+ $('btn-task').addEventListener('click', ()=>setTaskOn(!taskOn));
+setTaskOn(false);
+
+ $('go').addEventListener('click', muat);
+['dari','sampai'].forEach(id=>
+  $(id).addEventListener('keydown', e=>{ if(e.key==='Enter') muat(); }));
+
+infoAutoRefresh();
+setInterval(infoAutoRefresh, 60*1000);
+setInterval(()=>{ muat(); }, REFRESH_MS);
+
+muat();
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# .htaccess — hanya berlaku di Apache (diabaikan oleh nginx)
+
+# Matikan directory listing
+Options -Indexes
+
+# Blokir total folder ini: semua akses ditolak
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# Cadangan jika mod_rewrite tidak aktif: blokir file sensitif per nama
+<FilesMatch "^(server\.js|\.env.*|package(-lock)?\.json|\.htaccess)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
