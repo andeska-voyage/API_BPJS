@@ -17,13 +17,13 @@ app.use(express.static('public'));
 /* ====== KREDENSIAL (jangan dibagikan / di-commit) ====== */
 const SERVICES = {
   sep: {
-    consId: '29513', secretKey: '7gA350Sji11e',
-    userKey: '88f50cf542182200a5244c14197fb23e',
+    consId: '***', secretKey: '****',
+    userKey: '*****',
     baseUrl: 'https://apijkn.bpjs-kesehatan.go.id/vclaim-rest',
   },
   antrean: {
-    consId: '29513', secretKey: '7gA350Sji11e',
-    userKey: '152fcf2687a35774a6e59a27b1efac99',
+    consId: '***', secretKey: '****',
+    userKey: '******',
     baseUrl: 'https://apijkn.bpjs-kesehatan.go.id/antreanrs',
   },
 };
@@ -208,11 +208,11 @@ app.use('/api', async (req, res) => {
    ========================================================= */
 
 const MONITOR = {
-  host: '103.125.49.34',
+  host: 'IP_publik',
   port: 80,
   tcpTimeout: 5000,
-  telegramToken: '7304531542:AAHifKsF-3IPcJyjIvO4lUzpiXEIu22MEzc', // TODO: rotasi!
-  chatId: '1644489885',
+  telegramToken: '*****', // TODO: rotasi!
+  chatId: '******',
   menit: 60,
 };
 
